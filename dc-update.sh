@@ -18,12 +18,13 @@ if [ $1 == "help" ];then
 fi
 
 image_name=$1
-pkg_manager_bin=/usr/bin/zypper
-pkg_manager_list_p="$pkg_manager_bin --non-interactive lp"
-pkg_manager_patch="$pkg_manager_bin --non-interactive patch"
-no_updates_found="No updates found"
-cidfile=cidfile
+cidfile=$(mktemp)
 docker_conf_file=~/.dockercfg
+distros="suse fedora"
+
+for distro in $distros;do
+ . lib/dc-update.$distro.sh
+done
 
 clean() {
   [ ! -f $cidfile ] || rm $cidfile
@@ -31,6 +32,7 @@ clean() {
 
 clean_and_exit() {
   clean
+  echo "Bye"
   exit $1
 }
 
@@ -48,14 +50,25 @@ if [ $? -ne 0 ];then
   clean_and_exit -3
 fi
 
-docker run $image_name [ -f $pkg_manager_bin ]
-if [ $? -ne 0 ];then
-  echo "No $pkg_manager_bin found"
-  # TODO: try other package manager and update pkg_* and no_updates_found vars
+package_manager=""
+
+for distro in $distros;do
+  eval package_manager=\$$distro\_package_manager
+  docker run $image_name [ -f $package_manager ]
+  if [ $? -eq 0 ];then
+    set_$distro\_package\_manager
+    break
+  fi
+done
+
+if [ "$package_manager" == "" ];then
+  echo "No known package manager found."
+  echo "Supported distros"
+  echo $distros
   clean_and_exit -4
 fi
 
-docker run --rm $image_name $pkg_manager_list_p | grep "$no_updates_found"
+$check_updates
 if [ $? -eq 0 ];then
   echo "No rebuild needed"
   clean_and_exit 0
@@ -64,7 +77,6 @@ fi
 docker run --cidfile=$cidfile $image_name $pkg_manager_patch
 if [ $? -ne 0 ];then
   echo "There was some kind of problem running zypper patch in $image_name"
-  echo "Exiting..."
   clean_and_exit -5
 fi
 
