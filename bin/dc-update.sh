@@ -2,18 +2,23 @@
 # This script will trigger a docker image rebuild if there are pending
 # updates to be applied.
 
+pushd $(dirname $0)
+
 if [ $# -ne 1 ];then
   echo "Usage: $0 IMAGE_NAME"
+  popd
   exit -1
 fi
 
 if [ $1 == "--help" ];then
   echo "Usage: $0 IMAGE_NAME"
+  popd
   exit -1
 fi
 
 if [ $1 == "help" ];then
   echo "Usage: $0 IMAGE_NAME"
+  popd
   exit -1
 fi
 
@@ -32,6 +37,7 @@ clean() {
 
 clean_and_exit() {
   clean
+  popd
   echo "Bye"
   exit $1
 }
