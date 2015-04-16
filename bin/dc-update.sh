@@ -23,7 +23,7 @@ docker_conf_file=~/.dockercfg
 distros="suse fedora"
 
 for distro in $distros;do
- . lib/dc-update.$distro.sh
+ . ../lib/dc-update.$distro.sh
 done
 
 clean() {
