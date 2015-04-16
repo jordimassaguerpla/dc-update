@@ -1,5 +1,0 @@
-#!/bin/bash
-
-cd /usr/share/dc-update/ 
-./dc-update.sh $@
-
