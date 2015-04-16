@@ -3,6 +3,7 @@
 VERSION=$(cat VERSION)
 rsync -av bin dist/dc-update-$VERSION
 rsync -av lib dist/dc-update-$VERSION
+rsync -av lib package/dc-update-$VERSION
 rsync  LICENSE dist/dc-update-$VERSION
 rsync  README.md dist/dc-update-$VERSION
 pushd dist
